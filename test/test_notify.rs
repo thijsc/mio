@@ -70,3 +70,39 @@ pub fn test_notify() {
 
     assert!(handler.notify == 2, "actual={}", handler.notify);
 }
+
+#[test]
+pub fn test_notify_capacity() {
+    use std::default::Default;
+    use std::sync::mpsc::*;
+    use std::thread;
+
+    struct Capacity(Receiver<i32>);
+
+    impl Handler for Capacity {
+        fn notify(&mut self, event_loop: EventLoop<Capacity>, msg: i32) {
+            if msg == 1 {
+                self.0.recv().unwrap();
+            } else {
+                event_loop.shutdown();
+            }
+        }
+    }
+
+    let config = EventLoopConfig {
+        notify_capacity: 1,
+        .. EventLoopConfig::default()
+    };
+
+    let (tx, rx) = channel::<i32>();
+    let mut event_loop = EventLoop::configured(config).unwrap();
+    let notify = event_loop.channel();
+
+    //let guard = thread::scoped(move || {
+        let mut handler = Capacity(rx);
+        event_loop.run(&mut handler);
+    //});
+
+    // assert!(notify.send(1).is_ok());
+    // assert!(notify.send(2).is_err());
+}
