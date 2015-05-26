@@ -33,7 +33,7 @@ impl Selector {
     }
 
     pub fn register(&mut self, fd: RawFd, token: usize, interests: Interest, opts: PollOpt) -> io::Result<()> {
-        debug!("registering; token={}; interests={:?}", token, interests);
+        trace!("registering; token={}; interests={:?}", token, interests);
 
         try!(self.ev_register(fd, token, EVFILT_READ, interests.contains(Interest::readable()), opts));
         try!(self.ev_register(fd, token, EVFILT_WRITE, interests.contains(Interest::writable()), opts));
@@ -126,7 +126,7 @@ impl Events {
         let ev = &self.events[idx];
         let token = ev.udata;
 
-        debug!("get event; token={}; ev.filter={:?}; ev.flags={:?}", token, ev.filter, ev.flags);
+        trace!("get event; token={}; ev.filter={:?}; ev.flags={:?}", token, ev.filter, ev.flags);
 
         // When the read end of the socket is closed, EV_EOF is set on the
         // flags, and fflags contains the error, if any.
